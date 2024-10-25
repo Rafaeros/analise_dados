@@ -39,7 +39,7 @@ print("df dtypes")
 print(df.dtypes)
 
 # o display() Dentro do jupyter notebook já mostra o df.head() e o df.tail() e o df.shape
-display(df)
+# display(df)
 
 
 # 3° Tratamento de Dados
