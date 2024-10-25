@@ -3,7 +3,9 @@
 
 # 1° Importando CSV
 
-# In[1]:
+# 
+
+# In[10]:
 
 
 import pandas as pd
@@ -14,7 +16,7 @@ df = pd.read_csv('waterQuality1.csv')
 # 2° Analisando Dados
 # 
 
-# In[2]:
+# In[11]:
 
 
 # Analisando formato dos dados
@@ -37,13 +39,13 @@ print("df dtypes")
 print(df.dtypes)
 
 # o display() Dentro do jupyter notebook já mostra o df.head() e o df.tail() e o df.shape
-#display(df)
+display(df)
 
 
 # 3° Tratamento de Dados
 # 
 
-# In[3]:
+# In[12]:
 
 
 # Verificando valores unicos
@@ -71,7 +73,7 @@ print(df.dtypes)
 # 
 # 
 
-# In[4]:
+# In[13]:
 
 
 # Verificando se há desbalanceamento
@@ -95,7 +97,7 @@ print(df_balanced['is_safe'].value_counts())
 # 5° Análise Exploratória
 # 
 
-# In[23]:
+# In[14]:
 
 
 # Nenhum valor nulo identificado
@@ -107,14 +109,93 @@ df.describe()
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# Compostos presentes na água
+plt.figure(figsize=(15, 10))
+sns.boxplot(data=df_balanced.drop(columns=['is_safe']), orient='h',)
+plt.title("Compostos presentes na água")
+plt.show()
+
 # Visualizar a contagem de amostras seguras (1) e inseguras (0)
 sns.countplot(x='is_safe', data=df_balanced)
 plt.title('Distribuição de Amostras Seguras vs Inseguras')
 plt.show()
 
-# Boxplots das variáveis numéricas
-plt.figure(figsize=(15, 10))
-sns.boxplot(data=df_balanced.drop(columns=['is_safe'])*100/df.shape[0], orient='h')
-plt.title("Compostos presentes na água")
-plt.show()
 
+
+# 6° Separe os dados em conjuntos de treinamento (70%) e teste (30%)
+# 
+
+# In[15]:
+
+
+from sklearn.model_selection import train_test_split
+
+# Separando variáveis independentes (X) e a variável dependente (y)
+X = df_balanced.drop(columns=['is_safe'])
+y = df_balanced['is_safe']
+
+# Dividindo os dados em treinamento (70%) e teste (30%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+
+# 7° Aplique os classificadores Gaussian Naive Bayes, K Nearest Neighbours (n_neighbors=3 e metric='euclidean') e Decision Tree;
+
+# In[16]:
+
+
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import classification_report
+
+# Treinar o modelo Gaussian Naive Bayes
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+
+# Predizer no conjunto de teste
+y_pred_gnb = gnb.predict(X_test)
+
+# Relatório de classificação
+print("Gaussian Naive Bayes")
+print("Acertou %d de %d." %((y_test == y_pred_gnb).sum(), len(X_test)))
+print(classification_report(y_test, y_pred_gnb))
+
+
+# In[17]:
+
+
+from sklearn.neighbors import KNeighborsClassifier
+
+# Treinar o modelo KNN
+knn = KNeighborsClassifier(n_neighbors=3, metric='euclidean')
+knn.fit(X_train, y_train)
+
+# Predizer no conjunto de teste
+y_pred_knn = knn.predict(X_test)
+
+# Relatório de classificação
+print("K-Nearest Neighbors")
+print("Acertou %d de %d" % ((y_test == y_pred_knn).sum(), len(X_test)))
+print(classification_report(y_test, y_pred_knn))
+
+
+# In[18]:
+
+
+from sklearn.tree import DecisionTreeClassifier
+
+# Treinar o modelo Decision Tree
+dt = DecisionTreeClassifier(random_state=1)
+dt.fit(X_train, y_train)
+
+# Predizer no conjunto de teste
+y_pred_dt = dt.predict(X_test)
+
+# Relatório de classificação
+print("Decision Tree")
+print("Acertou %d de %d" % ((y_test == y_pred_dt).sum(), len(X_test)))
+print(classification_report(y_test, y_pred_dt))
+
+
+# 8° Aplique o classification report para analisar a performance dos modelos e identifique o estimador com os melhores resultados.
+# 
+# O Modelo que apresentou maior performance e acuracia nos acertos foi o Decision Tree com
+# Precision: 0.90 Recall: 0.89 e f1-score: 0.90
